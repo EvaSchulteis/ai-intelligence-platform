@@ -1,5 +1,7 @@
 import json
 
+import requests
+
 from ai_intelligence_platform.domain import Company
 
 MOCK_CRUNCHBASE_RESPONSES = {
@@ -19,6 +21,9 @@ def fetch_company_from_crunchbase(company_name: str) -> Company:
     )
 
 def get_crunchbase_response(company_name: str) -> dict:
-    crunchbase_response_text = MOCK_CRUNCHBASE_RESPONSES[company_name]
+    url = "https://api.github.com"
+    response = requests.get(url)
+    crunchbase_response_text = response.text
     crunchbase_response = json.loads(crunchbase_response_text)
+    print(crunchbase_response)
     return crunchbase_response
