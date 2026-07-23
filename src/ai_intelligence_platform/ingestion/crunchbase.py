@@ -20,7 +20,9 @@ def fetch_company_from_crunchbase(company_name: str) -> Company:
 
 def get_crunchbase_response(company_name: str) -> dict:
     url = "https://api.github.com"
-    response = requests.get(url)
+    
+    response = requests.get(url, params={"name": company_name})
+    print(response.url)
 
     crunchbase_response = response.json()
 
