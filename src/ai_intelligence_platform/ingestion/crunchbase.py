@@ -1,6 +1,10 @@
 import requests
+import time
 
 from ai_intelligence_platform.domain import Company
+
+MAX_RETRIES = 3
+RETRY_DELAY_SECONDS = 2
 
 MOCK_CRUNCHBASE_RESPONSES = {
     "Anthropic": """
@@ -19,11 +23,29 @@ def fetch_company_from_crunchbase(company_name: str) -> Company:
     )
 
 def get_crunchbase_response(company_name: str) -> dict:
-    url = "https://api.github.com"
-    
-    response = requests.get(url, params={"name": company_name})
-    print(response.url)
+    url = "https://this-domain-should-not-exist-123456789.com"
+    last_error = None
 
-    crunchbase_response = response.json()
+    for attempt in range(MAX_RETRIES):
 
-    return crunchbase_response
+        try:
+            response = requests.get(url, params={"name":company_name})
+            response.raise_for_status()
+            return response.json()
+
+        except requests.exceptions.RequestException as error:
+            last_error = error
+
+            if should_retry(error):
+                print(f"Attempt {attempt + 1} failed")
+                time.sleep(RETRY_DELAY_SECONDS)
+                print("Retrying...")
+            else:
+                raise error
+
+    raise RuntimeError(
+        "Could not retrieve company data from Crunchbase"
+    ) from last_error
+
+def should_retry(error):
+    return isinstance(error, requests.exceptions.ConnectionError)

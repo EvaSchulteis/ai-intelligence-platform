@@ -1,5 +1,82 @@
 # Weekly Engineering Log
 
+## Week of 2026-07-20
+
+### What I built
+- Added automated tests with pytest for the Crunchbase ingestion flow.
+- Created tests for should_retry() to validate retry policy decisions for different exception types.
+- Created a test for fetch_company_from_crunchbase() by replacing the API dependency with a fake response, allowing the domain transformation logic to be tested independently from the external service.
+- Created a test for get_crunchbase_response() by replacing requests.get() with a fake implementation and verifying that API responses are transformed into dictionaries correctly.
+- Learned how to use monkeypatch to replace dependencies during tests without changing production code.
+- Added pytest as a development dependency using uv add --dev pytest.
+
+## Engineering concepts I learned
+- Libraries often provide higher-level abstractions over common patterns (e.g. response.json() encapsulates response.text + json.loads()).
+- HTTP requests consist of a destination (URL) and metadata (headers); they serve different purposes.
+- Query parameters are another way HTTP requests communicate information, similar to headers, but they describe what resource you're requesting rather than how to communicate.
+- The requests library can construct query strings from a Python dictionary using params=..., hiding URL formatting details.
+- The ingestion layer translates communication in both directions: it translates our application's requests into the external API's language and translates the API's responses back into our domain model.
+- Python objects can contain attributes and methods; a Response object is a wrapper around HTTP information.
+- Libraries often create specialized types (e.g., CaseInsensitiveDict) to encapsulate domain-specific behavior.
+- Exceptions are objects representing failures, not just messages.
+- A function contract includes the type/shape of the data it promises to return.
+- Breaking a contract causes failures at the boundary where assumptions no longer hold.
+- Exceptions are objects, not just error messages.
+- Exception propagation through multiple abstraction layers.
+- Exception chaining with raise ... from error.
+- Translating technical failures into application-level errors.
+- Libraries expose abstraction boundaries through their own exception hierarchies.
+- Responsibility ownership applies to error handling as well as data modeling.
+- Tests should validate behavior and contracts rather than implementation details.
+- A mock should replace the boundary dependency that a function interacts with, not simply fake the final data output.
+- Dependencies should be mocked where the code looks them up, not where they originally come from (e.g., patching crunchbase.requests.get rather than the global requests.get).
+- A fake object only needs to implement the interface that the production code uses; it does not need to recreate the entire real object.
+- Python's duck typing allows different objects to be treated interchangeably if they provide the expected methods and behavior.
+- A function contract includes the interfaces it expects from its dependencies, not just its inputs and outputs.
+- requests.get() returns a Response object with behavior (raise_for_status(), json()), not just raw data.
+- API ingestion testing requires controlling external dependencies so tests are deterministic and do not rely on network availability.
+- Pytest separates test setup, execution, and validation: setup creates the environment and dependencies, execution runs the production code, and assertions verify the expected behavior.
+- Retry logic is a policy decision based on the nature of failures, not just the existence of an exception.
+- Connection failures and server-side failures may be transient, while client-side errors often indicate a request that should not be retried.
+- HTTP status codes provide information that can guide application behavior (e.g., distinguishing retryable 500-level failures from non-retryable 400-level failures).
+
+### Mental model that clicked
+- Good libraries apply the same design principles that I should apply in my own code: hide repetitive implementation details while preserving a simple public contract.
+- I had been thinking of the ingestion layer as translating external data into internal models. Today I realized it is really an interpreter between two systems, responsible for translating both outbound requests and inbound responses while shielding the rest of the application from external API details.
+- External representations flow through layers: HTTP response → parsed dictionary → domain model.
+- Each layer should hide implementation details from the layer above.
+- The question remains: "Who owns this knowledge?"
+- The happy path and failure path both flow through the architecture.
+- Each layer should understand failures in its own language.
+- Errors are another form of data transformation.
+- A test is not checking whether code works in isolation; it is checking whether a component honors its contract with the systems around it.
+- Mocking is less about "fake data" and more about "fake collaborators."
+- The important question when creating a mock is: "What does my code expect this dependency to be able to do?"
+- External systems should be treated as unreliable collaborators. Production code needs to define what happens when those systems fail.
+- The architecture now has clear testing boundaries:requests.get() → get_crunchbase_response() tests communication handling. get_crunchbase_response() → fetch_company_from_crunchbase() tests transformation into domain objects.
+-The same separation principles apply to testing as to application design: each layer should be responsible for its own concerns.
+- Reliability is part of ingestion design, not an afterthought added after the happy path works.
+
+### Decisions made
+- Keep communication-specific knowledge (URL construction, headers, authentication) inside the ingestion layer rather than exposing it to callers.
+- Retry logic currently belongs inside get_crunchbase_response() because it owns communication with the external system.
+- A shared retry abstraction should only be introduced when multiple consumers justify it.
+- Keep tests focused on behavior rather than internal implementation details.
+- Mock get_crunchbase_response() when testing domain transformation logic.
+- Mock requests.get() when testing API communication logic.
+- Keep retry logic inside the ingestion layer for now because that layer owns communication with the external API.
+- Continue separating retry policy (should_retry) from retry execution (the loop that performs retries).
+- Expand retry logic to consider HTTP status codes rather than only exception types.
+
+### Connections I noticed
+- response.json() is similar to using a well-designed dbt macro: instead of repeating multiple implementation steps everywhere, you expose a simpler operation that communicates intent.
+- URLs and headers are configuration for communicating with an external system, similar to connection profiles or source configurations in analytics engineering—they describe how to communicate, not what the business logic is.
+- Mocking dependencies is similar to isolating upstream systems in analytics engineering: when testing a dbt model, you often want to control the inputs rather than rely on live upstream data.
+- The fake response object is similar to creating a test fixture for a warehouse table: it provides the shape and behavior needed for downstream logic without depending on the real source.
+- API ingestion reliability has parallels with data pipeline reliability: external API availability ≈ upstream source availability, retries ≈ pipeline recovery strategies, contracts ≈ source schema expectations.
+- The same principle applies across Python, SQL, and dbt: define clear boundaries, hide implementation details, and make assumptions explicit.
+- Testing has reinforced the same architectural question from earlier: "Who owns this knowledge?", The ingestion layer owns API communication knowledge; the domain layer owns business object knowledge.
+
 ## Week of 2026-07-13
 
 ### What I built
