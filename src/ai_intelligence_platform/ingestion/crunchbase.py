@@ -29,7 +29,7 @@ def get_crunchbase_response(company_name: str) -> dict:
     for attempt in range(MAX_RETRIES):
 
         try:
-            response = requests.get(url, params={"name":company_name})
+            response = requests.get(url, params={"name": company_name})
             response.raise_for_status()
             return response.json()
 
@@ -48,4 +48,14 @@ def get_crunchbase_response(company_name: str) -> dict:
     ) from last_error
 
 def should_retry(error):
-    return isinstance(error, requests.exceptions.ConnectionError)
+    if isinstance(error, requests.exceptions.ConnectionError):
+        return True
+
+    if isinstance(error, requests.exceptions.HTTPError):
+        if error.response is None:
+            return False
+
+        if 500 <= error.response.status_code < 600:
+            return True
+
+    return False
