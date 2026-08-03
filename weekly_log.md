@@ -1,5 +1,45 @@
 # Weekly Engineering Log
 
+## Week of 2026-07-27
+
+### What I built
+- Designed and then built the next iteration of the retry policy in crunchbase.py before implementing it.
+- Planned the structure of and then built tests for retrying HTTP 500 & 400 errors, along with all the other contracts within should_retry() in crunchbase.py
+
+### Engineering concepts I learned
+- Different exception classes expose different information. For example, HTTPError carries a response object, while ConnectionError does not.
+- Safe exception handling often requires identifying the exception type before accessing exception-specific attributes.
+- Tests should use real library objects whenever practical and only fake the minimum behavior needed. 
+- Retry decisions can depend on data carried by an exception object (such as an HTTP status code), not just the exception type itself.
+- A unit test should fail because our code is wrong, not because the environment is different. 
+- Abstraction exists so that change has somewhere to go. 
+
+### Engineering principles I practiced
+- Single Responsibility Principle: a test should have one reason to fail.
+- Dependency Injection: instead of creating your dependency yourself, someone else gives it to you.
+- Boundary isolation: find the boundary of the code I'm testing and replace only that dependency.
+- Designing for change: Things that change together belong together. Things that change for different reasons should be separated.
+- Separation of concerns: responsibilities exist at different scales: project, package, module, class, and function.
+
+### Mental model that clicked
+- Exception handling follows the same design principles as the rest of the application: first determine what kind of object you're working with, then safely use the information that object provides.
+- Good exception handling progressively narrows possibilities rather than making assumptions about every failure.
+- Good tests preserve as much real behavior as possible and replace only the boundary being isolated.
+- Think of single responsibility principle as single reason to change.
+- Architecture is about putting knowledge where it belongs. A good system separates responsibilities based on what can change independently. External APIs, domain concepts, analytics logic, and notifications should not know more about each other than necessary.
+
+### Decisions made
+- Retry policy should eventually distinguish between retryable server failures (5xx) and non-retryable client failures (4xx).
+- If retry rules continue accumulating, revisit whether the retry policy itself should become a separate abstraction rather than continuing to grow inside a single function.
+- Use a real requests.exceptions.HTTPError in tests and attach a fake response rather than creating a fake HTTP error class.
+- Continue writing tests that describe new behavior before modifying production code.
+
+### Connections I noticed
+- Progressively narrowing the possibilities when handling exceptions is similar to minding the order of a CASE WHEN statement.
+- Designing retry logic is similar to business rules in analytics engineering: the challenge is less about syntax and more about deciding where the business knowledge belongs.
+- Using real library objects in tests is similar to using real dbt macros while mocking only upstream data—you keep as much production behavior as possible while isolating the dependency under test.
+- Software boundaries are similar to dbt model boundaries. A staging model shouldn't contain business logic, and a domain model shouldn't contain API-specific logic. Both are about separating the source of truth from the transformations built on top of it.
+
 ## Week of 2026-07-20
 
 ### What I built
@@ -10,7 +50,7 @@
 - Learned how to use monkeypatch to replace dependencies during tests without changing production code.
 - Added pytest as a development dependency using uv add --dev pytest.
 
-## Engineering concepts I learned
+### Engineering concepts I learned
 - Libraries often provide higher-level abstractions over common patterns (e.g. response.json() encapsulates response.text + json.loads()).
 - HTTP requests consist of a destination (URL) and metadata (headers); they serve different purposes.
 - Query parameters are another way HTTP requests communicate information, similar to headers, but they describe what resource you're requesting rather than how to communicate.
