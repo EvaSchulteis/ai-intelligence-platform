@@ -1,5 +1,45 @@
 # Weekly Engineering Log
 
+## Week of 2026-08-03
+
+### What I built 
+- Continued building the Crunchbase ingestion module and its retry behavior.
+- Added/expanded tests around retry behavior and exception handling.
+- Refactored/considered boundaries between application, ingestion, and domain layers.
+
+### Engineering concepts I learned
+- A reusable piece of code is not automatically a reusable abstraction. Extract code when the knowledge and reason for change are shared—not merely because the syntax appears more than once.
+- A responsibility is defined by its reason to change, not by the number of operations it performs. A function can contain several steps and still have one coherent responsibility if those steps change for the same reason.
+- Architecture can be understood by tracing knowledge boundaries: the application orchestrates, the domain represents internal concepts, and ingestion communicates with and translates external systems.
+- Reading unfamiliar code is an engineering skill. Understanding the story a module is trying to tell is more useful than merely enumerating its functions and statements.
+- Not every algorithm deserves its own abstraction. Fixed delay, exponential backoff, jitter, and retry-after handling can all belong to retry policy because they answer the same question: how should retries behave?
+- Refactoring should be driven by evidence of multiple reasons to change, not by the theoretical possibility of future complexity.
+
+### Engineering principles I practiced
+- The thing that chooses which implementation to use should usually live at a higher level than the thing that performs the work.
+- Single responsibility principle as "single reason to change."
+- Separation of concerns — particularly separating external-system communication, domain representation, application orchestration, notifications, and persistence.
+- Dependency inversion / dependency injection — callers should be able to supply a dependency rather than forcing lower-level code to choose its own implementation.
+- Prefer narrow contracts over "anything goes" interfaces. A function returning whatever happens to be available today can create downstream ambiguity and make future changes harder to manage.
+- Don't introduce dependencies merely because two pieces of code currently interact. A lower-level module should not acquire knowledge of higher-level business concepts just because it happens to participate in the workflow.
+
+### Mental model that clicked
+- Read code by asking why it exists, not what it does. Instead of describing syntax ("this file has one function"), describe responsibilities ("this module orchestrates the workflow"). Responsibilities reveal architecture much better than implementation details.
+- Architecture is about protecting boundaries. A good abstraction doesn't merely make code reusable. It protects a responsibility from unrelated changes.
+
+### Decisions made
+- Keep external-source-specific knowledge inside the ingestion layer rather than allowing it to leak into the company domain model.
+- Keep application.py responsible for orchestration rather than putting business rules or external-system knowledge there.
+- Keep retry behavior together while it represents one coherent retry policy; don't split individual retry algorithms into abstractions prematurely.
+- Prefer dependency injection when the caller should control which implementation is used.
+- Don't generalize a function into a reusable utility until there is evidence that its knowledge and reason for change are actually shared.
+- Continue separating what the system should do from how it performs the work.
+
+### Connections I noticed
+- The same architecture principles apply to dbt and Python. A staging model shouldn't know business logic just as an ingestion module shouldn't know domain decisions. Both are examples of putting knowledge at the correct boundary.
+- Freshness checking and retry policy are structurally similar. Both separate a policy ("what counts as acceptable?") from a mechanism ("how do we perform the check/retry?").
+
+
 ## Week of 2026-07-27
 
 ### What I built
