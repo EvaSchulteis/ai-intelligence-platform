@@ -10,8 +10,11 @@ RUNTIME_ERROR = "Could not retrieve company data from Crunchbase"
 
 URL = "https://this-domain-should-not-exist-123456789.com"
 
+
 def fetch_company_from_crunchbase(company_name: str) -> Company:
-    crunchbase_response = get_source_response(company_name, URL, MAX_RETRIES, RETRY_DELAY_SECONDS, RUNTIME_ERROR)
+    params={"name": company_name}
+
+    crunchbase_response = get_source_response(URL, params, MAX_RETRIES, RETRY_DELAY_SECONDS, should_retry, RUNTIME_ERROR)
     return Company(
         name=crunchbase_response["name"],
     )

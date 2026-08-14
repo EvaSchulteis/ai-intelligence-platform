@@ -2,14 +2,14 @@ import requests
 import time
 from collections.abc import Callable
 
-def get_source_response(URL: str, params: dict, MAX_RETRIES: int, RETRY_DELAY_SECONDS: int, should_retry: Callable, RUNTIME_ERROR: str) -> dict:
+def get_source_response(url: str, params: dict, max_retries: int, retry_delay_seconds: int, should_retry: Callable, runtime_error: str) -> dict:
 
     last_error = None
 
-    for attempt in range(MAX_RETRIES):
+    for attempt in range(max_retries):
 
         try:
-            response = requests.get(URL, params=params)
+            response = requests.get(url, params=params)
             response.raise_for_status()
             return response.json()
 
@@ -18,11 +18,11 @@ def get_source_response(URL: str, params: dict, MAX_RETRIES: int, RETRY_DELAY_SE
 
             if should_retry(error):
                 print(f"Attempt {attempt + 1} failed")
-                time.sleep(RETRY_DELAY_SECONDS)
+                time.sleep(retry_delay_seconds)
                 print("Retrying...")
             else:
                 raise error
 
     raise RuntimeError(
-        RUNTIME_ERROR
+        runtime_error
     ) from last_error
