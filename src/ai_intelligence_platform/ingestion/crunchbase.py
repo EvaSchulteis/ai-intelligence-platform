@@ -2,7 +2,7 @@ import requests
 import time
 
 from ai_intelligence_platform.domain import Company
-from ai_intelligence_platform.ingestion import get_source_response
+from ai_intelligence_platform.ingestion.http import get_source_response
 
 MAX_RETRIES = 3
 RETRY_DELAY_SECONDS = 2

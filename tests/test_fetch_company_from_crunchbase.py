@@ -3,7 +3,7 @@ import ai_intelligence_platform.ingestion.crunchbase as crunchbase
 from ai_intelligence_platform.domain import Company
 
 
-def fake_response(company_name):
+def fake_response(*args):
     return {
         "name": "Anthropic",
         "website": "https://anthropic.com",
@@ -14,7 +14,7 @@ def fake_response(company_name):
 def test_fetch_company_from_crunchbase_returns_company(monkeypatch):
     monkeypatch.setattr(
         crunchbase,
-        "get_crunchbase_response",
+        "get_source_response",
         fake_response,
     )
 
