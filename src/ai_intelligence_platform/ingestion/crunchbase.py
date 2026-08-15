@@ -1,7 +1,7 @@
 import requests
-import time
 
 from ai_intelligence_platform.domain import Company
+from ai_intelligence_platform.domain import CompanySourceError
 from ai_intelligence_platform.ingestion.http import get_source_response
 
 MAX_RETRIES = 3
@@ -14,7 +14,19 @@ URL = "https://this-domain-should-not-exist-123456789.com"
 def fetch_company_from_crunchbase(company_name: str) -> Company:
     params={"name": company_name}
 
-    crunchbase_response = get_source_response(URL, params, MAX_RETRIES, RETRY_DELAY_SECONDS, should_retry, RUNTIME_ERROR)
+    try:
+        crunchbase_response = get_source_response(
+            URL,
+            params,
+            MAX_RETRIES,
+            RETRY_DELAY_SECONDS,
+            should_retry,
+        )
+    except requests.exceptions.RequestException as error:
+        raise CompanySourceError(
+            RUNTIME_ERROR
+        ) from error
+
     return Company(
         name=crunchbase_response["name"],
     )
