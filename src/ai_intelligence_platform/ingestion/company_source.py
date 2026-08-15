@@ -1,8 +1,10 @@
+from collections.abc import Callable
+
 from ai_intelligence_platform.domain import Company
 from ai_intelligence_platform.domain import CompanySourceError
 from ai_intelligence_platform.domain import CompanyNotFoundError
 
-def fetch_company(company_name:str, sources: list) -> Company:
+def fetch_company(company_name:str, sources: list[Callable[[str], Company]]) -> Company:
 
     for source in sources:
 
@@ -10,7 +12,7 @@ def fetch_company(company_name:str, sources: list) -> Company:
             company = source(company_name)
             return company
 
-        except CompanySourceError as error:
+        except CompanySourceError:
             continue
 
     raise CompanyNotFoundError("All company sources failed")
