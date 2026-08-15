@@ -2,7 +2,7 @@ import requests
 import time
 from collections.abc import Callable
 
-def get_source_response(url: str, params: dict, max_retries: int, retry_delay_seconds: int, should_retry: Callable, runtime_error: str) -> dict:
+def get_source_response(url: str, params: dict, max_retries: int, retry_delay_seconds: int, should_retry: Callable) -> dict:
 
     last_error = None
 
@@ -23,6 +23,4 @@ def get_source_response(url: str, params: dict, max_retries: int, retry_delay_se
             else:
                 raise error
 
-    raise RuntimeError(
-        runtime_error
-    ) from last_error
+    raise last_error
