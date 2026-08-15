@@ -20,7 +20,6 @@ def fake_get(*args, **kwargs):
 
 MAX_RETRIES = 3
 RETRY_DELAY_SECONDS = 2
-RUNTIME_ERROR = "Request failed"
 
 URL = "https://example.com"
 params={"name": "test"}
@@ -42,6 +41,5 @@ def test_get_source_response_raise_error(monkeypatch):
             params,
             MAX_RETRIES,
             RETRY_DELAY_SECONDS,
-            never_retry,
-            RUNTIME_ERROR,
+            never_retry
         )

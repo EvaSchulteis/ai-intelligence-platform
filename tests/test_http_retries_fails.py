@@ -1,24 +1,16 @@
+import pytest
 import requests
-from collections.abc import Callable
 
 import ai_intelligence_platform.ingestion.http as http
 from ai_intelligence_platform.ingestion.http import get_source_response
 
-class FakeResponse:
-    def raise_for_status(self):
-        pass
-
-    def json(self):
-        return {
-            "name": "test",
-            "website": "https://example.com",
-            "founded_year": 2021,
-        }
-
 
 connection_error = requests.exceptions.ConnectionError()
 
-responses = iter([connection_error, FakeResponse()])
+responses = iter([
+    connection_error,
+    connection_error,
+    connection_error,])
 
 def fake_get(*args, **kwargs):
     response = next(responses)
@@ -34,16 +26,22 @@ RETRY_DELAY_SECONDS = 2
 URL = "https://example.com"
 params={"name": "test"}
 
-def always_retry(error):
+def should_retry(error):
     return True
 
-def test_get_source_response_retries_then_succeeds(monkeypatch):
+def test_get_source_response_raise_error(monkeypatch):
     monkeypatch.setattr(
         http.requests,
         "get",
         fake_get,
     )
 
-    response = get_source_response(URL, params, MAX_RETRIES, RETRY_DELAY_SECONDS, always_retry)
 
-    assert response["name"] == "test"
+    with pytest.raises(requests.exceptions.ConnectionError):
+        get_source_response(
+            URL,
+            params,
+            MAX_RETRIES,
+            RETRY_DELAY_SECONDS,
+            should_retry,
+        )
