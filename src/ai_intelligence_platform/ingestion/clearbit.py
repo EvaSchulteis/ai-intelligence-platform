@@ -2,6 +2,7 @@ import requests
 import time
 
 from ai_intelligence_platform.domain import Company
+from ai_intelligence_platform.domain import CompanySourceError
 from ai_intelligence_platform.ingestion.http import get_source_response
 
 MAX_RETRIES = 5
@@ -14,7 +15,19 @@ URL = "https://fake_clearbit.com"
 def fetch_company_from_clearbit(company_name: str) -> Company:
     params={"name": company_name}
 
-    clearbit_response = get_source_response(URL, params, MAX_RETRIES, RETRY_DELAY_SECONDS, should_retry, RUNTIME_ERROR)
+    try:
+            clearbit_response = get_source_response(
+                URL,
+                params,
+                MAX_RETRIES,
+                RETRY_DELAY_SECONDS,
+                should_retry,
+            )
+    except requests.exceptions.RequestException as error:
+        raise CompanySourceError(
+            RUNTIME_ERROR
+        ) from error
+    
     return Company(
         name=clearbit_response["name"],
     )
