@@ -1,5 +1,45 @@
 # Weekly Engineering Log
 
+## Week of 2026-08-10
+
+### What I built
+- Created a second ingestion source for Clearbit and a test for it.
+- Extracted the HTTP request/retry mechanism into http.py, leaving source-specific policy in Crunchbase and Clearbit.
+- Built company_source.py as an orchestration layer that tries company sources in order and falls back when a source raises CompanySourceError.
+- Added CompanySourceError and CompanyNotFoundError as domain-level errors to create explicit boundaries between source failures and orchestration failure.
+- Wired the source orchestrator into application.py and verified the full Crunchbase → Clearbit → CompanyNotFoundError flow end-to-end.
+- Added tests covering success, retry, non-retryable failure, source failure, fallback, and all-sources-failed behavior.
+
+### Engineering concepts I learned
+- Separation of mechanism from policy: reusable mechanisms can accept source-specific policy rather than owning that policy themselves.
+- Dependency injection: company_source.py receives an ordered list of source functions rather than knowing which sources exist.
+- Exception translation across abstraction boundaries: source modules translate external/request errors into CompanySourceError, while the orchestrator translates "all sources failed" into CompanyNotFoundError.
+- Behavioral testing / testing contracts: tests should protect observable behavior rather than implementation details.
+- Testing with fake dependencies: orchestrator tests can use fake source functions rather than invoking HTTP or source-specific logic.
+- Callable typing: list[Callable[[str], Company]] describes the interface expected of the source functions.
+
+### Engineering principles I practiced
+- Patch the name where the code under test looks it up, not necessarily where the function was originally defined.
+- Refactoring a responsibility boundary means refactoring the tests around that boundary too. 
+- An iterator can give a test double a sequence of behaviors across successive calls.
+- Separate mechanism from policy, and introduce abstractions when duplication/complexity gives you a concrete reason to.
+- Design tests around the behavior a component promises, rather than how it happens to implement that behavior.
+
+### Mental model that clicked
+- Each layer translates the complexity below it into a simpler contract for the layer above it.
+
+### Decisions made
+- Abstracted the HTTP operation from the source-specific policy in crunchbase.py and clearbit.py.
+- Kept retry configuration and retry decisions source-specific.
+- Used CompanySourceError as the boundary between source-specific failures and orchestration.
+- Used CompanyNotFoundError for the distinct case where all available sources fail.
+
+### Connections I noticed
+- Testing and architecture are connected: moving a responsibility means moving/refocusing the tests around the new boundary.
+- Abstractions should be earned by a concrete problem rather than introduced speculatively.
+- Domain-level errors can act as interfaces between layers, allowing higher layers to remain ignorant of lower-level implementation details.
+
+
 ## Week of 2026-08-03
 
 ### What I built 

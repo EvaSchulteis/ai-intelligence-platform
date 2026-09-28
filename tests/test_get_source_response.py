@@ -17,7 +17,6 @@ class FakeResponse:
 
 MAX_RETRIES = 3
 RETRY_DELAY_SECONDS = 2
-RUNTIME_ERROR = "Could not retrieve company data from Crunchbase"
 
 URL = "https://this-domain-should-not-exist-123456789.com"
 params={"name": "Anthropic"}
@@ -32,6 +31,6 @@ def test_get_source_response_success(monkeypatch):
         fake_get,
     )
 
-    response = get_source_response(URL, params, MAX_RETRIES, RETRY_DELAY_SECONDS, should_retry, RUNTIME_ERROR)
+    response = get_source_response(URL, params, MAX_RETRIES, RETRY_DELAY_SECONDS, should_retry)
 
     assert response["name"] == "Anthropic"
