@@ -22,7 +22,6 @@ def fake_get(*args, **kwargs):
 
 MAX_RETRIES = 3
 RETRY_DELAY_SECONDS = 2
-
 URL = "https://example.com"
 params={"name": "test"}
 
@@ -35,7 +34,6 @@ def test_get_source_response_raise_error(monkeypatch):
         "get",
         fake_get,
     )
-
 
     with pytest.raises(requests.exceptions.ConnectionError):
         get_source_response(

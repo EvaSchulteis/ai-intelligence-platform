@@ -5,12 +5,11 @@ from ai_intelligence_platform.domain import Company
 from ai_intelligence_platform.domain import CompanySourceError
 from ai_intelligence_platform.ingestion.http import get_source_response
 
+
 MAX_RETRIES = 5
 RETRY_DELAY_SECONDS = 10
 RUNTIME_ERROR = "Could not retrieve company data from Clearbit"
-
 URL = "https://fake_clearbit.com"
-
 
 def fetch_company_from_clearbit(company_name: str) -> Company:
     params={"name": company_name}

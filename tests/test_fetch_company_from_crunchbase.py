@@ -10,7 +10,6 @@ def fake_response(*args):
         "founded_year": 2021,
     }
 
-
 def test_fetch_company_from_crunchbase_returns_company(monkeypatch):
     monkeypatch.setattr(
         crunchbase,

@@ -4,6 +4,7 @@ from collections.abc import Callable
 import ai_intelligence_platform.ingestion.http as http
 from ai_intelligence_platform.ingestion.http import get_source_response
 
+
 class FakeResponse:
     def raise_for_status(self):
         pass
@@ -15,7 +16,6 @@ class FakeResponse:
             "founded_year": 2021,
         }
 
-
 connection_error = requests.exceptions.ConnectionError()
 
 responses = iter([connection_error, FakeResponse()])
@@ -25,12 +25,10 @@ def fake_get(*args, **kwargs):
 
     if isinstance(response,Exception):
         raise response
-
     return response
 
 MAX_RETRIES = 3
 RETRY_DELAY_SECONDS = 2
-
 URL = "https://example.com"
 params={"name": "test"}
 

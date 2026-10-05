@@ -4,10 +4,10 @@ from ai_intelligence_platform.domain import Company
 from ai_intelligence_platform.domain import CompanySourceError
 from ai_intelligence_platform.ingestion.http import get_source_response
 
+
 MAX_RETRIES = 3
 RETRY_DELAY_SECONDS = 2
 RUNTIME_ERROR = "Could not retrieve company data from Crunchbase"
-
 URL = "https://this-domain-should-not-exist-123456789.com"
 
 
@@ -43,3 +43,4 @@ def should_retry(error):
             return True
 
     return False
+

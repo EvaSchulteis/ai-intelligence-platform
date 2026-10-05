@@ -4,6 +4,7 @@ import ai_intelligence_platform.ingestion.http as http
 from ai_intelligence_platform.ingestion.http import get_source_response
 from ai_intelligence_platform.ingestion.crunchbase import should_retry
 
+
 class FakeResponse:
     def raise_for_status(self):
         pass
@@ -17,7 +18,6 @@ class FakeResponse:
 
 MAX_RETRIES = 3
 RETRY_DELAY_SECONDS = 2
-
 URL = "https://this-domain-should-not-exist-123456789.com"
 params={"name": "Anthropic"}
 
