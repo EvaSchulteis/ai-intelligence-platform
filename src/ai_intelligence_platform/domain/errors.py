@@ -3,3 +3,7 @@ class CompanySourceError(Exception):
 
 class CompanyNotFoundError(Exception):
     pass
+
+class GitHubOrganizationError(Exception):
+    pass
+
