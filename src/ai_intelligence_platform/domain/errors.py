@@ -7,3 +7,5 @@ class CompanyNotFoundError(Exception):
 class GitHubOrganizationError(Exception):
     pass
 
+class GitHubRepositoryError(Exception):
+    pass
