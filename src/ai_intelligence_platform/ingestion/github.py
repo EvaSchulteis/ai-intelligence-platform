@@ -10,6 +10,7 @@ from ai_intelligence_platform.ingestion.http import get_source_response
 MAX_RETRIES = 3
 RETRY_DELAY_SECONDS = 2
 BASE_URL = "https://api.github.com/orgs/"
+PER_PAGE = 100
 
 
 
@@ -38,33 +39,40 @@ def fetch_github_organization(login: str) -> GitHubOrganization:
     )
 
 def fetch_repositories(organization: GitHubOrganization) -> list[Repository]:
-    params = {}
     URL = f"{BASE_URL}{organization.login}/repos"
     RUNTIME_ERROR = "Could not retrieve repository data from GitHub"
     repositories = []
+    page = 1
 
-    try:
-        github_response = get_source_response(
-            URL, 
-            params,
-            MAX_RETRIES,
-            RETRY_DELAY_SECONDS,
-            should_retry,
-        )
-    except requests.exceptions.RequestException as error:
-        raise GitHubRepositoryError(
-            RUNTIME_ERROR
-        ) from error
+    while True:
+        params = {"page": page, "per_page": PER_PAGE}
+        try:
+            github_response = get_source_response(
+                URL, 
+                params,
+                MAX_RETRIES,
+                RETRY_DELAY_SECONDS,
+                should_retry,
+            )
+        except requests.exceptions.RequestException as error:
+            raise GitHubRepositoryError(
+                f"{RUNTIME_ERROR} on page {page}"
+            ) from error
 
-    for response in github_response:
-        # pull out the required information from the response
-        repository = Repository(
-            repository_id=str(response["id"]),
-            github_organization_id=str(organization.github_organization_id),
-            name=response["name"],
-        )
+        for response in github_response:
+            # pull out the required information from the response
+            repository = Repository(
+                repository_id=str(response["id"]),
+                github_organization_id=str(organization.github_organization_id),
+                name=response["name"],
+            )
 
-        repositories.append(repository)
+            repositories.append(repository)
+
+        page += 1
+
+        if len(github_response) < PER_PAGE:
+            break
 
     return repositories
 
