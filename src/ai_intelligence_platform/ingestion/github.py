@@ -1,9 +1,13 @@
+from datetime import datetime, timezone
+
 import requests
 
 from ai_intelligence_platform.domain import GitHubOrganization
 from ai_intelligence_platform.domain import GitHubOrganizationError
 from ai_intelligence_platform.domain import Repository
 from ai_intelligence_platform.domain import GitHubRepositoryError
+from ai_intelligence_platform.domain import RepositoryLanguageObservation
+from ai_intelligence_platform.domain import GitHubRepositoryLanguageError
 from ai_intelligence_platform.ingestion.http import get_source_response
 
 
@@ -11,17 +15,16 @@ MAX_RETRIES = 3
 RETRY_DELAY_SECONDS = 2
 BASE_URL = "https://api.github.com/orgs/"
 PER_PAGE = 100
-
+RUNTIME_ERROR = "Could not retrieve data from GitHub"
 
 
 def fetch_github_organization(login: str) -> GitHubOrganization:
-    params={}
-    URL = f"{BASE_URL}{login}"
-    RUNTIME_ERROR = "Could not retrieve organization data from GitHub"
+    params = {}
+    url = f"{BASE_URL}{login}"
 
     try:
         github_response = get_source_response(
-            URL, 
+            url, 
             params,
             MAX_RETRIES,
             RETRY_DELAY_SECONDS,
@@ -29,7 +32,7 @@ def fetch_github_organization(login: str) -> GitHubOrganization:
         )
     except requests.exceptions.RequestException as error:
         raise GitHubOrganizationError(
-            RUNTIME_ERROR
+            f"{RUNTIME_ERROR} for organization {login}"
         ) from error
 
     return GitHubOrganization(
@@ -39,8 +42,7 @@ def fetch_github_organization(login: str) -> GitHubOrganization:
     )
 
 def fetch_repositories(organization: GitHubOrganization) -> list[Repository]:
-    URL = f"{BASE_URL}{organization.login}/repos"
-    RUNTIME_ERROR = "Could not retrieve repository data from GitHub"
+    url = f"{BASE_URL}{organization.login}/repos"
     repositories = []
     page = 1
 
@@ -48,7 +50,7 @@ def fetch_repositories(organization: GitHubOrganization) -> list[Repository]:
         params = {"page": page, "per_page": PER_PAGE}
         try:
             github_response = get_source_response(
-                URL, 
+                url, 
                 params,
                 MAX_RETRIES,
                 RETRY_DELAY_SECONDS,
@@ -56,11 +58,10 @@ def fetch_repositories(organization: GitHubOrganization) -> list[Repository]:
             )
         except requests.exceptions.RequestException as error:
             raise GitHubRepositoryError(
-                f"{RUNTIME_ERROR} on page {page}"
+                f"{RUNTIME_ERROR} about repositories for {organization.login} on page {page}"
             ) from error
 
         for response in github_response:
-            # pull out the required information from the response
             repository = Repository(
                 repository_id=str(response["id"]),
                 github_organization_id=str(organization.github_organization_id),
@@ -75,6 +76,38 @@ def fetch_repositories(organization: GitHubOrganization) -> list[Repository]:
             break
 
     return repositories
+
+def fetch_repository_language_observations(
+        organization: GitHubOrganization,
+        repository: Repository,
+) -> list[RepositoryLanguageObservation]:
+    params = {}
+    url = f"{BASE_URL}{organization.login}/{repository.name}/languages"
+
+    try:
+        github_response = get_source_response(
+            url,
+            params,
+            MAX_RETRIES,
+            RETRY_DELAY_SECONDS,
+            should_retry,
+        )
+        retrieved_at = datetime.now(timezone.utc)
+
+    except requests.exceptions.RequestException as error:
+        raise GitHubRepositoryLanguageError(
+            f"{RUNTIME_ERROR} for repository language observations from {repository.name}"
+        ) from error
+
+    return [
+        RepositoryLanguageObservation(
+            repository_id=repository.repository_id,
+            language=language,
+            byte_count=byte_count,
+            observed_at=retrieved_at,
+        )
+        for language, byte_count in github_response.items()
+    ]
 
 
 def should_retry(error):

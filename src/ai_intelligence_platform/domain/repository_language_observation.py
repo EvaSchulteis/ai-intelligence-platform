@@ -6,7 +6,5 @@ from datetime import datetime
 class RepositoryLanguageObservation:
     repository_id: str
     language: str
-    bytes: int
+    byte_count: int
     observed_at: datetime
-    loaded_at: datetime
-

@@ -9,3 +9,6 @@ class GitHubOrganizationError(Exception):
 
 class GitHubRepositoryError(Exception):
     pass
+
+class GitHubRepositoryLanguageError(Exception):
+    pass
