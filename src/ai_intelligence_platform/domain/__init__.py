@@ -7,3 +7,5 @@ from .errors import GitHubRepositoryLanguageError
 from .repository_language_observation import RepositoryLanguageObservation
 from .repository import Repository
 from .github_organization import GitHubOrganization
+from .github_collection_result import GitHubCollectionResult
+from .github_collection_failure import GitHubCollectionFailure
