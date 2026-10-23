@@ -2,12 +2,11 @@ import requests
 import time
 from collections.abc import Callable
 
-def get_source_response(url: str, params: dict, max_retries: int, retry_delay_seconds: int, should_retry: Callable) -> dict:
 
+def get_source_response(url: str, params: dict, max_retries: int, retry_delay_seconds: int, should_retry: Callable) -> dict:
     last_error = None
 
     for attempt in range(max_retries):
-
         try:
             response = requests.get(url, params=params)
             response.raise_for_status()

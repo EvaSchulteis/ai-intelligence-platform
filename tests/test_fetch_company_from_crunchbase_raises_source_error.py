@@ -4,6 +4,7 @@ import requests
 import ai_intelligence_platform.ingestion.crunchbase as crunchbase
 from ai_intelligence_platform.domain import CompanySourceError
 
+
 def fake_response(*args, **kwargs):
     raise requests.exceptions.ConnectionError
 
