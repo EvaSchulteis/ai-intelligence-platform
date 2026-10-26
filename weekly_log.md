@@ -1,5 +1,57 @@
 # Weekly Engineering Log
 
+## Week of 2026-10-19
+
+### What I built
+- Pivoted the project toward a multi-source Company Intelligence platform.
+- Established the GitHub source modeling chain: organization → repository → language observation.
+- Created GitHubOrganization and Repository domain models.
+- Implemented and tested GitHub organization ingestion.
+- Practiced source-to-domain translation and stable source identifiers.
+- Built collect_github_data() to orchestrate organization, repository, and language collection.
+- Created GitHubCollectionResult and GitHubCollectionFailure domain models to represent collection outcomes.
+- Implemented partial-failure handling: record repository-level language-fetch failures while continuing collection, but propagate prerequisite failures.
+- Added tests for successful collection, partial success, and prerequisite failures using pytest and monkeypatch.
+
+
+### Engineering concepts I learned
+- When designing classes:
+- Field: Information this object retains.
+    - Aggregation: A relationship where the object groups related objects together.
+    - Property: Information this object can calculate from its existing state.
+- Decision tree when designing a dataclass:
+    - What information does this object need to represent?
+    - Is it independent information that should be retained? Store it in a field—whether it’s a string, number, another object, or a list.
+    - Is it reliably derivable from those fields? Consider a property instead of storing a duplicate value.
+- pytest.raises() is a context manager that verifies an expected exception is raised.
+- An exception interrupts normal execution, so assertions placed after a raising call inside the same block may never execute.
+- monkeypatch lets tests replace dependencies with controlled fakes, allowing deterministic tests of orchestration behavior without making live API calls.
+- append() adds an object as one element, while extend() adds the elements of an iterable to an existing list.
+- Exception handling should distinguish failures that invalidate the overall operation from failures that can be recorded while processing continues.
+
+
+### Engineering principles I practiced
+- Separation of concerns: HTTP mechanics, GitHub-specific translation, domain models, and orchestration have distinct responsibilities.
+- Explicit failure semantics: prerequisite failures propagate; individual repository language-fetch failures are recorded.
+- Partial success: preserve useful observations from successful repositories even when another repository fails.
+- Deterministic testing: simulate success and failure scenarios rather than relying on live API behavior.
+- Avoiding redundant state: derive counts from existing data when the underlying information is sufficient.
+
+
+### Mental model that clicked
+- A test passing does not necessarily mean every assertion I wrote was executed. When an exception is raised inside a with pytest.raises(...) block, execution leaves the block at the point of the exception, and the context manager verifies that the expected exception occurred. This reinforced the importance of understanding the actual control flow of a program—not just reading the code and assuming what it does.
+
+### Decisions made
+- Pivot the project to use publicly sourced data and focus on six companies related to my current job: Abbott, Dexcom, Oura, Apple, Google, and Meta.
+- Every ingestion should be able to record when source data was observed and when it was loaded, but each model should retain history according to the analytical purpose of that data.
+- Keep HTTP retry mechanics separate from source-specific error translation.
+- Treat organization and repository-list fetches as prerequisites for collection.
+- Treat repository-level language-fetch failures as recoverable within the collection workflow, recording them while continuing with other repositories.
+- Represent collection results and failures explicitly rather than returning an ambiguous empty result when collection fails.
+
+### Connections I noticed
+- Collection orchestration resembles pipeline design: some failures invalidate the whole run, while others can be isolated to individual records or entities.
+
 ## Week of 2026-08-10
 
 ### What I built
